@@ -1,31 +1,36 @@
-import PoliceSystem from './PoliceSystem';
-import GangSystem from './GangSystem';
 import Phaser from 'phaser';
+import PressureSystem from './PressureSystem';
+import GangSystem from './GangSystem';
 
-export default class MBHSystem {
-  private active = false;
+export default class BossSystem {
   private scene: Phaser.Scene;
-  private eliteUnits: Phaser.Physics.Arcade.Group;
+  private gangs: GangSystem;
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, gangs: GangSystem) {
     this.scene = scene;
-    this.eliteUnits = this.scene.physics.add.group();
+    this.gangs = gangs;
   }
 
-  activate() { this.active = true; }
-
-  overrideIfActive(police: PoliceSystem, gangs: GangSystem) {
-    if (this.active) {
-      police['units'].getChildren().forEach(u => (u.body as Phaser.Physics.Arcade.Body).setVelocity(300));
-      if (Math.random() < 0.05) {
-        const elite = this.eliteUnits.create(Phaser.Math.Between(0, 8000), Phaser.Math.Between(0, 6000), 'elite');
-        this.scene.physics.moveToObject(elite, this.scene['player'], 250);
+  checkSpawnConditions(pressure: PressureSystem, gangs: GangSystem) {
+    gangs.gangs.forEach(gang => {
+      if (gang.state === 'Desperate' && gang.boss.alive && Math.random() < 0.02) {
+        const boss = this.scene.physics.add.sprite(Phaser.Math.Between(0, 8000), Phaser.Math.Between(0, 6000), 'boss');
+        boss.setData('hp', 200);
+        boss.setData('gangId', gang.id);
+        for (let i = 0; i < gang.boss.protection; i++) {
+          const escort = gang.members.getFirstDead(true, boss.x + Phaser.Math.Between(-50, 50), boss.y + Phaser.Math.Between(-50, 50), 'gang_member');
+          this.scene.physics.moveToObject(escort, this.scene['player'], 150);
+        }
+        this.scene.time.addEvent({
+          delay: 5000,
+          callback: () => {
+            if (gang.members.getLength() < gang.boss.protection) {
+              boss.destroy();
+            }
+          },
+          loop: true
+        });
       }
-      this.scene['shopsSafehouses'].safehouses.forEach(s => s.setVisible(false));
-    }
-  }
-
-  isDefeated() {
-    return this.eliteUnits.getLength() === 0 && !gangs.gangs.get('MBH')?.boss.alive;
+    });
   }
 }
