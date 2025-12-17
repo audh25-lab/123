@@ -29,6 +29,14 @@ export default class ShopSafehouseSystem {
       if (Phaser.Math.Distance.Between(player.x, player.y, safe.x, safe.y) < 50) {
         this.scene['playerStats'].hp = 100;
         this.scene['playerStats'].heat = 0;
+        localStorage.setItem('rva-save', JSON.stringify({
+          hp: this.scene['playerStats'].hp,
+          cash: this.scene['playerStats'].cash,
+          ammo: this.scene['playerStats'].ammo,
+          heat: this.scene['playerStats'].heat,
+          reputation: this.scene['reputation'].get(),
+          island: this.scene.scene.key
+        }));
       }
     });
   }
