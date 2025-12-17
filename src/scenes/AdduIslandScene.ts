@@ -1,13 +1,12 @@
 import BaseScene from './BaseScene';
 
-export default class AdduIslandScene extends BaseScene {
+export default class AdduIslandScene extends Phaser.Scene {
   constructor() {
     super('AdduIslandScene');
   }
 
   create() {
     super.create();
-    // Animations for boss and elite (upgraded)
     this.anims.create({
       key: 'boss-walk',
       frames: this.anims.generateFrameNumbers('boss', { start: 0, end: 7 }),
@@ -37,5 +36,7 @@ export default class AdduIslandScene extends BaseScene {
     this.gangs.addGang('Signal Null', 'A+', 0x00ffff, [], []);
     this.gangs.addGang('MBH', 'S', 0xffffff, [], []);
     this.mbh.activate();
+
+    this.pressure.assignTerritories(this.gangs.gangs);
   }
 }
