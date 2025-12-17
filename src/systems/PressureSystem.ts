@@ -50,4 +50,16 @@ export default class PressureSystem {
   partialReset() {
     this.grid.forEach(row => row.forEach(tile => tile.value /= 2));
   }
+
+  assignTerritories(gangs: Map<string, any>) {
+    gangs.forEach(gang => {
+      const numTiles = Phaser.Math.Between(10, 50);
+      for (let i = 0; i < numTiles; i++) {
+        const gx = Phaser.Math.Between(0, this.width - 1);
+        const gy = Phaser.Math.Between(0, this.height - 1);
+        this.grid[gy][gx].gangId = gang.id;
+        this.grid[gy][gx].value = 20;
+      }
+    });
+  }
 }
