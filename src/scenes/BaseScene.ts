@@ -47,18 +47,17 @@ export default class BaseScene extends Phaser.Scene {
   }
 
   preload() {
-    // Load from online URLs (no local files)
     this.load.image('city_tiles', 'https://opengameart.org/sites/default/files/Sample_24.png');
-    this.load.image('player', 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/497cbb97-70fd-44c5-9eba-947232013556/dfg61y9-7d772480-3673-41db-9a88-e7b80a8be2d2.png/v1/fill/w_1280,h_724/free_top_down_2d_pixel_art_sprites_by_onemandev_dfg61y9-fullview.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NzI0IiwicGF0aCI6Ii9mLzQ5N2NiYjk3LTcwZmQtNDRjNS05ZWJhLTk0NzIzMjAxMzU1Ni9kZmc2MXk5LTdkNzcyNDgwLTM2NzMtNDFkYi05YTg4LWU3YjgwYThiZTJkMi5wbmciLCJ3aWR0aCI6Ijw9MTI4MCJ9XV0sImF1ZCI6WyJ1cm46c2VydmljZTppbWFnZS5vcGVyYXRpb25zIl19.cwjWF4yt1TzPtD3XMMb5PavvS9M5QwH-cYDyG6s-R8c');
+    this.load.spritesheet('player', 'https://opengameart.org/sites/default/files/topdownshootercharacters.png', { frameWidth: 32, frameHeight: 32 }); // Upgraded to spritesheet for animations
     this.load.image('car', 'https://www.clipartmax.com/png/middle/19-195986_clipart-car-from-above-race-top-down-clipground-car-clip-art-from.png');
-    this.load.image('gang_member', 'https://tint.creativemarket.com/Gw7_JdZdbBmrNk2Tb9yvCVD5iiGD5xuZQTYS-esGgV0/width:1200/height:800/gravity:nowe/rt:fill-down/el:1/czM6Ly9maWxlcy5jcmVhdGl2ZW1hcmtldC5jb20vaW1hZ2VzL3NjcmVlbnNob3RzL3Byb2R1Y3RzLzMzLzMzMS8zMzEyNjIvZ2FuZ3N0ZXJwcmV2aWV3LW8uanBn?1422725083');
-    this.load.image('police', 'https://s3.amazonaws.com/gameartpartnersimagehost/wp-content/uploads/2019/01/gameartprev-Police-Man-2D-Game-Character-Sprite.png');
-    this.load.image('civilian', 'https://a0.anyrgb.com/pngimg/18/960/topdown-and-bottomup-design-military-vehicle-rpg-military-organization-sprite-soldier-army-military-weapons-auto-part.png');
+    this.load.spritesheet('gang_member', 'https://opengameart.org/sites/default/files/gangster.png', { frameWidth: 32, frameHeight: 32 });
+    this.load.spritesheet('police', 'https://opengameart.org/sites/default/files/police.png', { frameWidth: 32, frameHeight: 32 });
+    this.load.spritesheet('civilian', 'https://opengameart.org/sites/default/files/civilian.png', { frameWidth: 32, frameHeight: 32 });
     this.load.image('bullet', 'https://www.clipartmax.com/png/middle/331-3318578_bullet-free-icon-gun-bullet-sprite-png.png');
     this.load.image('shop', 'https://img.craftpix.net/2022/04/Buildings-Collection-Top-Down-Pixel-Art2.webp');
     this.load.image('safehouse', 'https://img.craftpix.net/2022/10/Top-Down-Buildings-and-Objects-Pixel-Art2.webp');
-    this.load.image('boss', 'https://img.craftpix.net/2025/10/Free-Top-Down-Boss-Character-4-Direction-Pack4.png');
-    this.load.image('elite', 'https://img.craftpix.net/2025/09/Free-Top-Down-Goblin-Character-Sprite4.png');
+    this.load.spritesheet('boss', 'https://img.craftpix.net/2025/10/Free-Top-Down-Boss-Character-4-Direction-Pack4.png', { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('elite', 'https://img.craftpix.net/2025/09/Free-Top-Down-Goblin-Character-Sprite4.png', { frameWidth: 32, frameHeight: 32 });
 
     this.load.audio('gun_shot', 'https://www.soundjay.com/mechanical/sounds/gun-gunshot-01.mp3');
     this.load.audio('explosion', 'https://www.soundjay.com/mechanical/sounds/explosion-01.mp3');
@@ -97,6 +96,19 @@ export default class BaseScene extends Phaser.Scene {
     this.player = this.physics.add.sprite(400, 300, 'player').setCollideWorldBounds(true);
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
 
+    // Animations for player
+    this.anims.create({
+      key: 'player-walk',
+      frames: this.anims.generateFrameNumbers('player', { start: 0, end: 3 }),
+      frameRate: 10,
+      repeat: -1
+    });
+    this.anims.create({
+      key: 'player-idle',
+      frames: [{ key: 'player', frame: 0 }],
+      frameRate: 20
+    });
+
     this.keys = this.input.keyboard!.createCursorKeys();
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       this.touchPointer = pointer;
@@ -118,7 +130,6 @@ export default class BaseScene extends Phaser.Scene {
       if (member.getData('hp') <= 0) member.destroy();
       bullet.destroy();
     });
-    // Similar colliders for police, civilians, etc.
   }
 
   update(time: number, delta: number) {
@@ -152,6 +163,9 @@ export default class BaseScene extends Phaser.Scene {
       const norm = Math.sqrt(dx * dx + dy * dy);
       body.setVelocity(speed * dx / norm, speed * dy / norm);
       this.player.setRotation(Phaser.Math.Angle.Between(0, 0, dx, dy));
+      this.player.anims.play('player-walk', true); // Play walk animation
+    } else {
+      this.player.anims.play('player-idle', true); // Idle when stopped
     }
 
     if (Phaser.Input.Keyboard.JustDown(this.keys.space) && this.playerStats.ammo > 0 && this.time.now > this.player.getData('lastShot') + 500) {
