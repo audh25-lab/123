@@ -56,18 +56,20 @@ export default class GangSystem {
 
       if (gang.state === 'Hostile' && Math.random() < 0.1 * (isNight ? 2 : 1)) {
         const member = gang.members.getFirstDead(true, Phaser.Math.Between(0, 8000), Phaser.Math.Between(0, 6000), 'gang_member') as Phaser.Physics.Arcade.Sprite;
-        member.setTint(gang.color);
-        member.setData('hp', 50);
-        this.scene.time.addEvent({
-          delay: 1000,
-          callback: () => {
-            if (member.active) {
-              this.scene.physics.moveToObject(member, this.scene['player'], 100);
-              member.anims.play('gang-walk', true); // Play animation
-            }
-          },
-          loop: true
-        });
+        if (member) {
+          member.setTint(gang.color);
+          member.setData('hp', 50);
+          this.scene.time.addEvent({
+            delay: 1000,
+            callback: () => {
+              if (member.active) {
+                this.scene.physics.moveToObject(member, this.scene['player'], 100);
+                member.anims.play('gang-walk', true);
+              }
+            },
+            loop: true
+          });
+        }
       }
 
       this.gangs.forEach(otherGang => {
@@ -75,19 +77,33 @@ export default class GangSystem {
           this.scene.physics.add.collider(gang.members, otherGang.members, this.fightHandler, undefined, this);
         }
       });
+
+      if (gang.state !== 'Dormant' && pressure['grid'][Math.floor(this.scene['player'].y / pressure['tileSize'])][Math.floor(this.scene['player'].x / pressure['tileSize'])].gangId === gang.id) {
+        if (Math.random() < 0.2) {
+          const defender = gang.members.getFirstDead(true, this.scene['player'].x + Phaser.Math.Between(-200, 200), this.scene['player'].y + Phaser.Math.Between(-200, 200), 'gang_member');
+          if (defender) {
+            defender.setTint(gang.color);
+            defender.setData('hp', 50);
+            this.scene.physics.moveToObject(defender, this.scene['player'], 150);
+            defender.anims.play('gang-walk', true);
+          }
+        }
+      }
     });
   }
 
   private fightHandler(a: Phaser.GameObjects.GameObject, b: Phaser.GameObjects.GameObject) {
-    (a as Phaser.Physics.Arcade.Sprite).setData('hp', (a.getData('hp') || 50) - 10);
-    if (a.getData('hp') <= 0) {
-      a.destroy();
+    const aSprite = a as Phaser.Physics.Arcade.Sprite;
+    const bSprite = b as Phaser.Physics.Arcade.Sprite;
+    aSprite.setData('hp', (aSprite.getData('hp') || 50) - 10);
+    if (aSprite.getData('hp') <= 0) {
+      aSprite.destroy();
       this.scene.sound.play('explosion');
       this.scene.cameras.main.shake(200, 0.02);
     }
-    (b as Phaser.Physics.Arcade.Sprite).setData('hp', (b.getData('hp') || 50) - 10);
-    if (b.getData('hp') <= 0) {
-      b.destroy();
+    bSprite.setData('hp', (bSprite.getData('hp') || 50) - 10);
+    if (bSprite.getData('hp') <= 0) {
+      bSprite.destroy();
       this.scene.sound.play('explosion');
       this.scene.cameras.main.shake(200, 0.02);
     }
